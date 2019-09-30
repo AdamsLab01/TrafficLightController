@@ -17,6 +17,6 @@ There are several modes:
 
 ~ Random or glitchy
 
-I don’t have a schematic as it’s pretty simple, basically just the SSRs connected to the aTtiny through a current limiting resistor and a button/switch for changing modes and turning the lights on/off. 
+I don’t have a schematic as it’s pretty simple, basically just the SSRs connected to the ATtiny through a current limiting resistor and a button/switch for changing modes and turning the lights on/off. 
 
 For more info see:
