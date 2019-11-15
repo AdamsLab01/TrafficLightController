@@ -20,3 +20,5 @@ There are several modes:
 I don’t have a schematic as it’s pretty simple, basically just the SSRs connected to the ATtiny through a current limiting resistor and a button/switch for changing modes and turning the lights on/off. 
 
 For more info see:
+
+https://adamslab.io/projects/2019/9/30/shop-traffic-light-traffic-light-restoration
