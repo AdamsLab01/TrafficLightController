@@ -374,7 +374,7 @@ void fRandom() {
 }
 
 void fOff() {
-  digitalWrite (RedLight, LOW);
+  digitalWrite(RedLight, LOW);
   digitalWrite(YellowLight, LOW);
   digitalWrite(GreenLight, LOW);
 
