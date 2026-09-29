@@ -1,0 +1,99 @@
+name: Build WLED Network Display RC8 firmware
+
+on:
+  push:
+    branches:
+      - wled-netdisplay-rc8-firmware-build
+    paths:
+      - '.github/workflows/build-wled-network-display-rc8.yml'
+      - 'firmware-src/**'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout build branch
+        uses: actions/checkout@v4
+
+      - name: Checkout WLED 16.0.1
+        uses: actions/checkout@v4
+        with:
+          repository: wled/WLED
+          ref: v16.0.1
+          path: wled
+
+      - name: Checkout QuinLED firmware config 16.0.1
+        uses: actions/checkout@v4
+        with:
+          repository: intermittech/QuinLED-Firmware
+          ref: v16.0.1
+          path: quinled
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install PlatformIO
+        run: python -m pip install --upgrade "platformio==6.1.18"
+
+      - name: Install QuinLED board configuration and Network Display usermod
+        shell: bash
+        run: |
+          set -euxo pipefail
+          cp quinled/platformio_override.ini wled/platformio_override.ini
+          rm -rf wled/usermods/network_display
+          mkdir -p wled/usermods/network_display
+          cp firmware-src/network_display/usermod_network_display.cpp wled/usermods/network_display/
+          cp firmware-src/network_display/library.json wled/usermods/network_display/
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("wled/platformio_override.ini")
+          s = p.read_text()
+          s = s.replace(
+              "custom_usermods = audioreactive multi_relay sht\n",
+              "custom_usermods = audioreactive multi_relay sht network_display\n",
+              1,
+          )
+          marker = "[env:dig2go]"
+          head, tail = s.split(marker, 1)
+          tail = tail.replace(
+              "custom_usermods = audioreactive multi_relay\n",
+              "custom_usermods = audioreactive multi_relay network_display\n",
+              1,
+          )
+          s = head + marker + tail
+          p.write_text(s)
+          PY
+          grep -A8 -E '^\[env:(dig2go|dig-next-2)\]' wled/platformio_override.ini
+
+      - name: Build Dig2Go
+        working-directory: wled
+        run: pio run -e dig2go
+
+      - name: Build Dig-Next-2
+        working-directory: wled
+        run: pio run -e dig-next-2
+
+      - name: Collect firmware and checksums
+        shell: bash
+        run: |
+          set -euxo pipefail
+          mkdir -p output
+          cp wled/.pio/build/dig2go/firmware.bin output/WLED_16.0.1_Dig2Go_NetworkDisplay_RC8.bin
+          cp wled/.pio/build/dig-next-2/firmware.bin output/WLED_16.0.1_Dig-Next-2_NetworkDisplay_RC8.bin
+          (cd output && sha256sum *.bin > SHA256SUMS.txt)
+          ls -lh output
+          cat output/SHA256SUMS.txt
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: wled-network-display-rc8-firmware
+          path: output/*
+          if-no-files-found: error
+          retention-days: 7
