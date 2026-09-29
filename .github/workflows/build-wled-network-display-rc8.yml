@@ -90,8 +90,8 @@ jobs:
         run: |
           set -euxo pipefail
           mkdir -p output
-          cp wled/.pio/build/dig2go/firmware.bin output/WLED_16.0.1_Dig2Go_NetworkDisplay_RC8.bin
-          cp wled/.pio/build/dig-next-2/firmware.bin output/WLED_16.0.1_Dig-Next-2_NetworkDisplay_RC8.bin
+          cp wled/build_output/release/WLED_16.0.1_Dig2Go-Audioreactive.bin output/WLED_16.0.1_Dig2Go_NetworkDisplay_RC8.bin
+          cp wled/build_output/release/WLED_16.0.1_Dig-Next-2.bin output/WLED_16.0.1_Dig-Next-2_NetworkDisplay_RC8.bin
           (cd output && sha256sum *.bin > SHA256SUMS.txt)
           ls -lh output
           cat output/SHA256SUMS.txt
